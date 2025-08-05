@@ -10,30 +10,53 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-# Environment variables (use Render ENV, never hardcode)
-BOT_TOKEN = os.environ.get("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8")
-OPENROUTER_API_KEY = os.environ.get("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")
-MODEL = "mistralai/mistral-7b-instruct"  # Change model if needed
+# Load from environment (Replace with actual os.environ on Render)
+BOT_TOKEN = os.environ.get("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8")  # e.g., "8476019..."
+OPENROUTER_API_KEY = os.environ.get("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")  # e.g., "sk-or-v1-..."
+MODEL = "mistralai/mistral-7b-instruct"  # You can change this to other supported models
 
 # /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🤖 Hello! I’m your free AI bot via OpenRouter.\nAsk me anything!")
 
-# Chat handler
+# AI Chat handler
 async def ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     try:
         async with aiohttp.ClientSession() as session:
             headers = {
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "HTTP-Referer": "https://t.me/sn6ak_bot",  # Replace with your bot or site
+                "HTTP-Referer": "https://t.me/sn6ak_bot",  # Replace with your bot link
                 "X-Title": "TelegramAIChatBot"
             }
             payload = {
                 "model": MODEL,
                 "messages": [{"role": "user", "content": user_input}]
             }
+
             async with session.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    ai_reply = data["choices"][0]["message"]["content"]
+                    await update.message.reply_text(ai_reply)
+                else:
+                    await update.message.reply_text("❌ Error: Failed to get a response from OpenRouter.")
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        await update.message.reply_text("⚠️ Something went wrong. Please try again later.")
+
+# Main bot function
+async def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_chat))
+    print("Bot is running...")
+    await app.run_polling()
+
+# Entry point
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())
                 if resp.status != 200:
                     await update.message.reply_text("⚠️ OpenRouter error. Please try again later.")
                     return
