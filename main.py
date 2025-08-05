@@ -57,21 +57,6 @@ async def main():
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-                if resp.status != 200:
-                    await update.message.reply_text("⚠️ OpenRouter error. Please try again later.")
-                    return
-
-                data = await resp.json()
-                reply = data["choices"][0]["message"]["content"]
-                await update.message.reply_text(reply.strip())
-
-    except Exception as e:
-        logging.error(f"Error: {e}")
-        await update.message.reply_text("⚠️ Something went wrong. Please try again later.")
-
-# Main app setup
-if __name__ == "__main__":
-    if not BOT_TOKEN or not OPENROUTER_API_KEY:
         raise Exception("❌ BOT_TOKEN or OPENROUTER_API_KEY not set in environment variables.")
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
