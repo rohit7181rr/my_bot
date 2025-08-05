@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 
 # Set your tokens (use env vars on Render)
-BOT_TOKEN = os.environ.get("BOT_TOKEN")  # Telegram bot token
+BOT_TOKEN = os.environ.get("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8")  # Telegram bot token
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")  # OpenAI API key
 
 openai.api_key = OPENAI_API_KEY
