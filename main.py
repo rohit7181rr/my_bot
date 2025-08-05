@@ -1,39 +1,31 @@
-import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import (
-    ApplicationBuilder,
-    CommandHandler,
-    CallbackQueryHandler,
-    MessageHandler,
-    ContextTypes,
-    filters,
-)
+import asyncio
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
+# Replace with your actual bot token
+BOT_TOKEN = "8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8"
 
-# --- /start command handler ---
+# /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("💡 Help", callback_data='help')],
-        [InlineKeyboardButton("ℹ️ About", callback_data='about')],
-        [InlineKeyboardButton("💬 Chat", callback_data='chat')],
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Hello! I'm your bot 🤖\nHow can I help you?")
 
-    await update.message.reply_text(
-        "👋 Hello! I'm your smart AI bot. Choose an option below:",
-        reply_markup=reply_markup
-    )
+# For any message
+async def reply_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+    await update.message.reply_text(f"You said: {user_message}")
 
-# --- Button click handler ---
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
+# Main function to run the bot
+async def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply_text))
+
+    print("🤖 Bot is running...")
+    await app.run_polling()
+
+if __name__ == "__main__":
+    asyncio.run(main())
     data = query.data
     if data == "help":
         await query.edit_message_text("🆘 Help: Just type a message and I’ll reply!\nUse /start to return.")
