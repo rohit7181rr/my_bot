@@ -10,23 +10,23 @@ logging.basicConfig(
     level=logging.INFO,
 )
 
-# Environment variables (do not hardcode your keys!)
+# Environment variables (use Render ENV, never hardcode)
 BOT_TOKEN = os.environ.get("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8")
 OPENROUTER_API_KEY = os.environ.get("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")
-MODEL = "mistralai/mistral-7b-instruct"
+MODEL = "mistralai/mistral-7b-instruct"  # Change model if needed
 
 # /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🤖 Hello! I’m your free AI bot via OpenRouter.\nAsk me anything!")
 
-# Chat handler for AI responses
+# Chat handler
 async def ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text
     try:
         async with aiohttp.ClientSession() as session:
             headers = {
                 "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "HTTP-Referer": "https://t.me/sn6ak_bot",
+                "HTTP-Referer": "https://t.me/sn6ak_bot",  # Replace with your bot or site
                 "X-Title": "TelegramAIChatBot"
             }
             payload = {
@@ -34,31 +34,30 @@ async def ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "messages": [{"role": "user", "content": user_input}]
             }
             async with session.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload) as resp:
+                if resp.status != 200:
+                    await update.message.reply_text("⚠️ OpenRouter error. Please try again later.")
+                    return
+
                 data = await resp.json()
                 reply = data["choices"][0]["message"]["content"]
                 await update.message.reply_text(reply.strip())
 
     except Exception as e:
         logging.error(f"Error: {e}")
-        await update.message.reply_text("⚠️ Sorry, something went wrong.")
+        await update.message.reply_text("⚠️ Something went wrong. Please try again later.")
 
 # Main app setup
 if __name__ == "__main__":
     if not BOT_TOKEN or not OPENROUTER_API_KEY:
-        raise Exception("❌ BOT_TOKEN or OPENROUTER_API_KEY not set!")
+        raise Exception("❌ BOT_TOKEN or OPENROUTER_API_KEY not set in environment variables.")
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_chat))
 
     print("✅ Bot is running...")
     app.run_polling()
-                data = await resp.json()
-                reply = data["choices"][0]["message"]["content"]
-                await update.message.reply_text(reply.strip())
-    except Exception as e:
-        logging.error(f"Error: {e}")
-        await update.message.reply_text("⚠️ Sorry, something went wrong.")
 
 # Main app setup
 if __name__ == "__main__":
