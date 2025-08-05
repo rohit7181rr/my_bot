@@ -1,24 +1,20 @@
-from telegram.ext import Updater, CommandHandler
+import asyncio
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# Function to handle /start command
-def start(update, context):
-    update.message.reply_text("Hello! I'm your AI bot.")
+# /start command handler
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Hello! I'm your AI bot 🤖")
 
-def main():
-    # Replace with your actual bot token
-    TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+# Main bot setup
+async def main():
+    app = ApplicationBuilder().token("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8").build()
 
-    # Create updater and dispatcher
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app.add_handler(CommandHandler("start", start))
 
-    # Register command handler
-    dp.add_handler(CommandHandler("start", start))
+    print("🤖 AI Bot is running...")
+    await app.run_polling()
 
-    # Start the bot
-    print("🤖 Bot is running...")
-    updater.start_polling()
-    updater.idle()
-
+# Entry point
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
