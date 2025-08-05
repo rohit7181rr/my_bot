@@ -1,20 +1,46 @@
-import asyncio
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import logging
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+
+# Enable logging
+logging.basicConfig(level=logging.INFO)
 
 # /start command handler
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! I'm your AI bot 🤖")
+    keyboard = [
+        [InlineKeyboardButton("💡 Help", callback_data='help')],
+        [InlineKeyboardButton("ℹ️ About", callback_data='about')],
+        [InlineKeyboardButton("💬 Chat", callback_data='chat')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        "👋 Hello! I'm your smart AI bot. Choose an option below:", reply_markup=reply_markup
+    )
 
-# Main bot setup
-async def main():
-    app = ApplicationBuilder().token("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8").build()
+# Handles inline button presses
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "help":
+        await query.edit_message_text("🆘 Send any message and I'll reply back!\nUse /start to return.")
+    elif query.data == "about":
+        await query.edit_message_text("🤖 I'm a Telegram bot built with love and Python.")
+    elif query.data == "chat":
+        await query.edit_message_text("🗣️ Sure! Just type your message and I'll echo it.")
 
-    app.add_handler(CommandHandler("start", start))
+# Replies to normal text messages
+async def reply_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_msg = update.message.text
+    await update.message.reply_text(f"🔁 You said: {user_msg}")
 
-    print("🤖 AI Bot is running...")
-    await app.run_polling()
+# Run the bot
+app = ApplicationBuilder().token("YOUR_BOT_TOKEN_HERE").build()
 
-# Entry point
-if __name__ == "__main__":
-    asyncio.run(main())
+# Add handlers
+app.add_handler(CommandHandler("start", start))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, reply_text))
+app.add_handler(MessageHandler(filters.UpdateType.CALLBACK_QUERY, button_handler))
+
+# Run the bot
+app.run_polling()
