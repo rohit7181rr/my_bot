@@ -1,20 +1,24 @@
-import logging
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import Updater, CommandHandler
 
-# Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+# Function to handle /start command
+def start(update, context):
+    update.message.reply_text("Hello! I'm your AI bot.")
 
-# Your bot's command handler
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! I'm your AI bot.")
+def main():
+    # Replace with your actual bot token
+    TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
 
-# Build the bot app
-app = ApplicationBuilder().token("8476019073:AAF1AYFKyVHH_JFk-oKIvgqAuYjmw9cOKB8").build()
-app.add_handler(CommandHandler("start", start))
+    # Create updater and dispatcher
+    updater = Updater(TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-# Start the bot
-app.run_polling()
+    # Register command handler
+    dp.add_handler(CommandHandler("start", start))
+
+    # Start the bot
+    print("🤖 Bot is running...")
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":
+    main()
